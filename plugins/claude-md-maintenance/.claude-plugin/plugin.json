@@ -1,5 +1,5 @@
 {
   "name": "claude-md-maintenance",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Audit and maintain CLAUDE.md and CONTEXT_CONSTITUTION.md"
 }
