@@ -1,6 +1,6 @@
 {
   "name": "foundry-keeper",
-  "version": "0.1.0",
+  "version": "1.6.0",
   "description": "Self-improvement: unified operation log + monthly summariser",
   "hooks": {
     "PostToolUse": [
