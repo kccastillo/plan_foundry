@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "plan-foundry",
+  "version": "0.1.0",
+  "description": "Plan-foundry plugin marketplace \u2014 four plugins for plan-driven Claude Code work",
+  "owner": {
+    "name": "kccastillo"
+  },
+  "push_policy": "manual",
+  "plugins": [
+    {
+      "name": "plan-foundry-core",
+      "source": "./plugins/plan-foundry-core",
+      "version": "0.1.0",
+      "description": "Core planning and execution skills \u2014 write plans, audit, execute, retire",
+      "category": "development"
+    },
+    {
+      "name": "claude-md-maintenance",
+      "source": "./plugins/claude-md-maintenance",
+      "version": "0.1.0",
+      "description": "Audit and maintain CLAUDE.md and CONTEXT_CONSTITUTION.md",
+      "category": "development"
+    },
+    {
+      "name": "ideate",
+      "source": "./plugins/ideate",
+      "version": "0.1.0",
+      "description": "Three-phase ideation arc (Clarify \u2192 Survey \u2192 Converge)",
+      "category": "development"
+    },
+    {
+      "name": "foundry-keeper",
+      "source": "./plugins/foundry-keeper",
+      "version": "0.1.0",
+      "description": "Self-improvement: unified operation log + monthly summariser",
+      "category": "development"
+    }
+  ]
+}
