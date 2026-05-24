@@ -1,0 +1,315 @@
+# plan_foundry
+
+A planning-and-execution **scaffold** for Claude Code. You write down what you
+intend to do; the harness audits it with a second model, helps you fix it before
+any code is written, then executes it under supervision and records what
+happened — all as files in your repo, all version-controlled.
+
+## The idea: a scaffold, not a new harness
+
+There are two common ways to make a coding agent more reliable. plan_foundry is
+neither of them — it is the layer in between, and that is the whole pitch.
+
+- **Context engineering** — better prompts, rule files, skill packs. This
+  improves how an agent behaves, but every rule is a *request*: the model may
+  comply or may not, and nothing structurally catches it when it doesn't.
+  Compliance is probabilistic.
+- **Harness engineering** — building a whole new agent runtime, in effect a new
+  Claude Code, with its own execution loop, tool layer, and control flow. This
+  buys real determinism, but it is a large and ongoing engineering project.
+
+plan_foundry is a **scaffold**: it sits on top of Claude Code — the harness you
+already have — and gives you much of the determinism of a custom runtime without
+building one. State on disk decides what runs next. Audit gates block bad work
+before it becomes bad code. Verification re-runs in a trusted context. The
+guarantees are mechanical — a phase enum, a shell assertion, a tool-access
+boundary — not a request the model is trusted to honour. And it is all just
+files and skills: nothing to compile, nothing to host, nothing to maintain
+beyond a `git`-style sync.
+
+You don't have to choose between "hope the prompt holds" and "go build
+infrastructure." The scaffold is the middle path.
+
+## What it actually does
+
+Coding agents are very good at producing plausible-looking output very quickly.
+That is a problem when "plausible-looking" and "actually right" come apart —
+which they do, a lot, on anything beyond a small well-specified change. You ask
+for a feature; the agent picks an interpretation you didn't intend and writes
+500 lines before you see the diff. Or it references a database column that does
+not exist because the model quietly invented one. Or you spend two sessions
+agreeing on an approach and nobody — you or the agent — can later reconstruct
+what was decided or why.
+
+plan_foundry slows that loop down on purpose. Before any code is written, the
+agent records what it is about to do as a **PLAN file** — in enough detail that
+a separate pass, by a different model, can catch the mistakes. You read it. You
+push back. The plan is revised until it is actually right. Only then is the work
+executed — against the plan, not against an interpretation that lives in the
+agent's head and evaporates at session end.
+
+Imposing that discipline is the thing agents are bad at doing to themselves and
+good at following once it is imposed. That is the bet.
+
+## Artefacts and skills
+
+plan_foundry uses a small, fixed vocabulary. Knowing these terms makes the rest of the docs readable without consulting the source.
+
+| Artefact or skill | What it is |
+|---|---|
+| **PLAN** | The primary artefact. A Markdown file in `Workbench/` with structured frontmatter capturing intent, steps, verification, and outcome. `type: plan`. Schema reference: [plan-conventions.md](.claude/skills/write-plan/references/plan-conventions.md). |
+| **ADVICE** | A strategic note or recommendation captured mid-flight. `type: advice`. Written via `write-input`; consumed and retired once integrated into a PLAN. |
+| **RESEARCH** | A data drop — findings, survey results, or reference material. `type: research`. Same write/integrate/retire lifecycle as ADVICE. |
+| **LOG** | Monthly record of all PLANs executed in that calendar month. `type: log`. One file per month in `Workbench/`; the canonical status ledger for the orchestrator. |
+| **HANDOFF** | Session-boundary brief: what was done, what is next, what blockers exist. `type: handoff`. Written at session end by `handoff-next-session`; consumed at the next session start by `rehydrate-handoff`. |
+| **TESTREPORT** | Portable test output emitted by `test-foundry`. **Not a `type:` frontmatter artefact** — it is a consumer-visible emission from the test runner, stored outside the Workbench artefact family. |
+| **`ideate`** | Skill (verb). Structured problem-shaping before a PLAN is written — Clarify → Survey → Converge → Consolidate. |
+| **`write-input`** | Skill (verb). Records an ADVICE or RESEARCH file and auto-clears any PLAN blocked waiting on it. |
+| **`plan-pipeline`** | Skill (verb). Orchestrator. Reads PLAN frontmatter, fires the correct sub-skill for each phase, and advances the state machine. |
+| **`execute-plan`** | Skill (verb). Runs a checked PLAN end-to-end, records the outcome, and writes `last_executor_outcome` to frontmatter. |
+| **`retire`** | Skill (verb). Moves completed PLANs, integrated inputs, and superseded research to `Retired/`; verifies the post-condition. |
+
+## How it works
+
+Four mechanical guarantees underpin the scaffold — not conventions the model is trusted to follow, but structural enforcements:
+
+1. **Phase enum state machine.** A PLAN's `pipeline_phase` field is an enum (`drafting → drafted → checked → executing → outcome-verifying → complete`). The `plan-pipeline` orchestrator reads that enum and routes by value — it does not infer phase from context. Skipping a phase requires editing frontmatter, which is itself a tracked git change. Enforcement: [phase-state-machine.md](.claude/skills/plan-pipeline/references/phase-state-machine.md).
+2. **Audit gates on file content.** Before a PLAN advances from `drafted` to `checked`, it must pass two independent audits — `audit-sufficiency` (conceptual completeness, acceptance criteria, risks) and `audit-haiku-safe` (substrate fidelity, destructive-action discipline, executor-tier safety). Each audit reads the PLAN file fresh and returns structured findings; a finding at `error` severity is a blocker. There is no "override and continue" path without a recorded override. Enforcement: `audit-sufficiency` and `audit-haiku-safe` skills.
+3. **Verification in a fresh context.** After execution, the orchestrator re-runs `verify:` and `acceptance:` shell assertions in the parent context — not the executor's context and not the same turn that did the work. This eliminates the "executor checks its own work" failure mode. Enforcement: execute-plan SKILL.md decision 25.
+4. **Bundle propagation by copy, not symlink.** Skills, agents, and commands are real directories copied into each consumer project via `init-plan-foundry`. There is no machine-global state, no symlink mirror, and no plugin namespace. A consumer can fork, patch, or extend the bundle without touching upstream. Enforcement: [Portable Bundle invariant](ARCHITECTURE.md#invariant-portable-bundle) + `init-plan-foundry` install procedure.
+
+For consumer projects, when you observe plan_foundry behaviour worth reporting, the boundary rule applies: do not prosecute upstream issues inside your project's Workbench. Capture observations at observation-time as properly-typed RESEARCH or ADVICE files (via `write-input`) inside your project's `Workbench/`, then transfer those typed artefacts to the plan_foundry repo at session end. The captures arrive in plan_foundry already formalised — no staging dock, no later triage step. Full procedure: [init-plan-foundry/operating-rules.md § plan_foundry vs this-project boundary](.claude/skills/init-plan-foundry/operating-rules.md).
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full mechanism walkthrough — state-machine detail, audit-gate anatomy, verification model, and bundle propagation trade-offs.
+
+## What it's good at
+
+- **Catching wrong plans before they become wrong code.** A PLAN gets two audit
+  passes — conceptual sufficiency, then mechanical safety — before any edit is
+  made. Findings are blockers; revision is the supported path. A PLAN that fails
+  an audit is not the system regressing — it is the system working.
+- **Pinning model tiers to job shape.** Opus for design judgement, Sonnet for
+  mechanical review and execution, Haiku for cheap structured work. Cheap models
+  get bounded jobs they can finish; expensive models are reserved for what needs
+  them.
+- **Surviving context loss.** PLAN files live on disk with structured
+  frontmatter; state-machine transitions are recorded. If a session compresses,
+  crashes, or hands off to tomorrow, the next one reads frontmatter and resumes —
+  no "where were we?" reconstruction.
+- **Refusing to silently hallucinate.** PLANs declare the `substrate_files`
+  (schemas, API docs, modules) they touch. The plan-writer must `Read` them
+  before authoring; the audit then greps the Steps for references that do not
+  exist in that substrate and blocks on what it finds.
+- **Making "done" mean something.** Each PLAN carries a `verification_state`
+  enum plus executable acceptance checks. The orchestrator re-runs the checks
+  itself, in a trusted context, after execution. Boxes are not ticked
+  optimistically.
+- **Keeping the design landscape readable.** Maintenance skills audit `CLAUDE.md`
+  and `ARCHITECTURE.md` for context-rot. Lessons are codified into permanent
+  rules when they recur, not hoarded as episodic memory.
+
+## When to reach for it
+
+Reach for plan_foundry on work where building the wrong thing is expensive —
+refactors, architectural decisions, new features, anything novel or
+shape-defining — and on work that spans many sessions and needs durable state
+you can trust.
+
+It is deliberately not for raw throughput, and not for one-shot edits: "rename
+this function" does not need a PLAN, and the harness overhead is only justified
+when a plan is worth writing in the first place. plan_foundry surfaces
+uncertainty rather than hiding it — that is the point, not a side effect.
+
+## How the pieces fit
+
+The bundle is a collection of skills (Markdown prompts pinned to model tiers),
+agents (delegated workers with bounded tool access), and slash commands. Each
+one targets a specific failure mode.
+
+### The PLAN lifecycle: `plan-pipeline` + `write-plan` + `execute-plan`
+
+Every piece of intended work becomes a PLAN file in `Workbench/` with structured
+frontmatter, and moves through a fixed lifecycle:
+`drafting → drafted → checked → executing → outcome-verifying → complete`. The
+`plan-pipeline` skill is the orchestrator — it reads frontmatter, decides which
+phase fires next, and dispatches the right sub-skill. The state machine lives on
+disk, not in the model's head, so re-entry is idempotent. `write-plan` authors a
+PLAN and enforces the substrate-verification preflight; `execute-plan` runs an
+already-checked PLAN end-to-end and records the outcome.
+
+### The audit gates: `audit-sufficiency` + `audit-haiku-safe`
+
+"Looks fine to me" is a poor quality gate — humans and agents both miss things,
+and they miss *different* things on different passes. So a PLAN gets two audits,
+each scoped narrowly. `audit-sufficiency` runs on Opus and asks the conceptual
+question: does this PLAN have what it needs to succeed — clear acceptance
+criteria, identified risks, real verification? `audit-haiku-safe` runs on Sonnet
+and does the mechanical checks: substrate fidelity, destructive-action
+discipline, executor-tier safety. Findings are blockers, not advisories.
+
+### The Workbench: `update-workbench-index` + `/index` + `/status`
+
+A folder of PLAN files is just a folder until something projects it.
+`update-workbench-index` regenerates `Workbench/INDEX.md` from PLAN frontmatter —
+pure, deterministic projection. `/status` reads live `.heartbeat/` files plus
+PLAN state to show what is running, what is stalled, and what needs attention.
+
+### Carrying context across sessions: `handoff-next-session` + `rehydrate-handoff` + `foundry-log` + `lessons-learned`
+
+Long-running work spans many sessions. `handoff-next-session` writes a
+session-end brief; `rehydrate-handoff` reads it at the next session start.
+Cross-session learnings flow through `lessons-learned` into the monthly LOG;
+`foundry-log` does pattern analysis across the LOG's recorded events.
+
+### Research and advice: `write-input` + `rehydrate-input`
+
+Mid-PLAN you often need to research something or you receive strategic guidance.
+`write-input` records RESEARCH (data drops) or ADVICE (strategic notes) as their
+own files in `Workbench/`; PLANs blocked on a missing input auto-clear when it
+lands. `rehydrate-input` marks an input integrated once consumed, so it can be
+retired cleanly later.
+
+### Shaping problems before they become PLANs: `ideate`
+
+Sometimes the problem is not ready to be planned — you have a vague intention
+and need to think it through first. `ideate` runs a structured ideation cadence
+(Clarify → Survey → Converge → … → Consolidate) that narrows what the problem
+actually is, surveys options, and converges on a plan-ready direction.
+
+### Cleanup and doc hygiene: `retire` + `maintain-claude-md`
+
+`retire` moves completed PLANs, integrated inputs, and superseded research into a
+`Retired/` folder so the active surface stays legible. `maintain-claude-md`
+audits the always-loaded docs for context-rot — proposing codification when a
+recurring rule earns it, and removal when content is no longer load-bearing.
+
+### Self-testing: `test-foundry` + `/test-foundry`
+
+A planning harness that does not test itself will rot silently. `test-foundry`
+runs a two-tier harness — a Python tier for deterministic structural checks and
+an LLM tier for scenario walks — and emits a portable TESTREPORT.
+
+### Bundle hygiene: `init-plan-foundry` + `plan-foundry-sync` + `plan-foundry-uninstall`
+
+Installing into a new repo is one paste-prompt; updating is one command;
+removing is one command. All three work inside Claude Code sessions whose
+filesystem write surface is the target repo only (mobile, web, sandboxed
+desktop): the bundle is fetched on demand from a public URL into a transient
+`<target>/.plan-foundry-tmp/` rather than any machine-global location.
+
+## Compared to other approaches
+
+Three categories of tool do adjacent things. The mechanical differences matter.
+
+- **(a) Context-engineering-only approaches** (rule files, skill packs, system-prompt frameworks). These improve how a single agent behaves by asking it to behave well. The guidance can be excellent; the gap is structural: compliance is probabilistic. There is no audit that runs in a separate invocation with no prior turns, no phase gate that blocks on file content, no verification that re-executes in a fresh context. plan_foundry's audit passes are different model invocations — not the same model self-reviewing the same output in the same turn. That asymmetry is hard to replicate with prompts alone.
+
+- **(b) Custom harnesses and agent runtimes** (Aider, Cursor agent mode, hand-rolled execution loops). These buy real determinism by owning the execution loop, tool layer, and control flow. The cost is proportional: a custom runtime is an ongoing engineering project, and every new model or capability requires harness-level integration. plan_foundry gives you state-machine determinism and audit gates without building a runtime — state lives in files, transitions live in skills, and the harness is Claude Code itself.
+
+- **(c) Lightweight wrappers** (just-a-prompt-library, `/init`-style commands that scaffold a folder but carry no state). These reduce setup friction but do not track state across sessions. When context compresses or a session ends, the wrapper's scaffolding survives on disk but there is no frontmatter state machine, no phase enum to resume from, and no audit record showing what passed and what did not. plan_foundry's state lives in structured frontmatter checked into git — re-entry is idempotent because the state is the file, not the session.
+
+The trade-off plan_foundry accepts: harness overhead is only justified when writing the wrong plan is expensive. "Rename this function" should not need a PLAN. For anything where building the wrong thing costs more than the overhead, the scaffold pays off.
+
+## Install
+
+Open a Claude Code session inside the target repo and paste:
+
+> Bootstrap plan_foundry from https://github.com/kccastillo/plan_foundry into this repo.
+
+The agent will (1) `git clone --depth=1 https://github.com/kccastillo/plan_foundry .plan-foundry-tmp/`,
+(2) run `python3 .plan-foundry-tmp/.claude/skills/init-plan-foundry/lib/run_install.py`,
+(3) `rm -rf .plan-foundry-tmp/`. The install copies bundle content into
+`.claude/{skills,agents,commands,hooks}`, scaffolds `Workbench/` and `Retired/`,
+seeds the current-month LOG, updates `.gitignore`, inlines operating rules into
+`CLAUDE.md`, and records the bundle commit SHA at
+`.claude/.plan-foundry-bundle-version`. Idempotent — safe to re-paste.
+
+After install, **restart Claude Code** so the freshly-copied skills register
+with the harness.
+
+See [BOOTSTRAP.md](BOOTSTRAP.md) for the canonical procedure (the agent reads
+this on first contact).
+
+## Update
+
+```
+/plan-foundry-sync
+```
+
+Sync clones the public repo into `<target>/.plan-foundry-tmp/`, overwrites
+bundle-managed files with the latest content, refreshes the version pin, and
+deletes the tmp clone. It never deletes from the target — project additions
+survive, and files renamed or removed upstream are reported for manual cleanup.
+Tag pinning: `/plan-foundry-sync v0.5.0` fetches a specific bundle version.
+
+Check whether your project is at the latest bundle:
+
+```
+/plan-foundry-check-current
+```
+
+Compares your `.plan-foundry-bundle-version` to the remote HEAD via
+`git ls-remote`.
+
+## Uninstall
+
+```
+/plan-foundry-uninstall
+```
+
+Removes the four bundle-managed dirs, the version pin, the bundle `.gitignore`
+entries, and the CLAUDE.md sentinel block. Leaves `Workbench/`, `Retired/`, the
+monthly LOG, and project-local `.claude/` files (`settings.local.json`,
+`plan-foundry.config`) untouched — those are operator data, not bundle code.
+Offline; idempotent.
+
+## Skills inventory
+
+Every skill at `.claude/skills/<name>/SKILL.md`. Invoke via natural language
+("write a plan", "let's ideate") or `Skill("<name>")`.
+
+**Core lifecycle:** `plan-pipeline`, `write-plan`, `audit-sufficiency`, `audit-haiku-safe`, `execute-plan`, `retire`.
+
+**Workbench projection + state:** `update-workbench-index` (plus slash commands `/index`, `/status`).
+
+**Cross-session continuity:** `handoff-next-session`, `rehydrate-handoff`, `lessons-learned`, `foundry-log`.
+
+**Inputs:** `write-input`, `rehydrate-input`.
+
+**Problem-shaping:** `ideate`.
+
+**Maintenance:** `maintain-claude-md`, `test-foundry`.
+
+**Bundle:** `init-plan-foundry`, `plan-foundry-sync`, `plan-foundry-check-current`.
+
+## Mobile and web caveat
+
+Claude Code mobile and web apps do NOT read project-local
+`.claude/{skills,agents,commands}/`. The operating rules inlined into `CLAUDE.md`
+ARE visible there, but skill, agent, and slash command invocations only work in
+Claude Code desktop sessions.
+
+## Configuration
+
+The bundle reads no configuration beyond `Workbench/` defaults. Override the
+bundle install location at the target by setting `PLAN_FOUNDRY_BUNDLE_PATH`
+before running `init-plan-foundry`.
+
+## Repository structure (consumer view)
+
+After `init-plan-foundry`, your target repo gains:
+
+```
+.claude/
+  skills/agents/commands/hooks/   (copied from bundle — gitignored, regenerable via /plan-foundry-sync)
+  .plan-foundry-bundle-version    (version pin — gitignored)
+  settings.local.json             (project-local — tracked if you commit it)
+  plan-foundry.config             (project-local — tracked if you commit it)
+Workbench/                        (PLAN files + monthly LOG)
+Retired/                          (completed artefacts, tracked)
+CLAUDE.md                         (operating rules between sentinel markers)
+```
+
+## Further reading
+
+- [CLAUDE.md](CLAUDE.md) — operating rules and agent-execution discipline.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — design philosophy, the scaffold-vs-harness-helper positioning, strategic principles, invariants register.
