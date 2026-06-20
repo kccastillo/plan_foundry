@@ -1,0 +1,19 @@
+---
+description: Single-tier currency check. Reads this project's `.claude/.plan-foundry-bundle-version` pin and compares it to the remote bundle's HEAD via `git ls-remote https://github.com/kccastillo/plan_foundry`. If behind, surfaces `/plan-foundry-sync` as the next step. Network required (graceful failure if unreachable).
+---
+
+Invoke `Skill("plan-foundry-check-current")` and report the result.
+
+The skill runs `lib/check_current.py`, which:
+1. Reads `<target>/.claude/.plan-foundry-bundle-version` (the project pin).
+2. Runs `git ls-remote https://github.com/kccastillo/plan_foundry HEAD` (the remote HEAD).
+3. Compares.
+
+Status ∈ {`current`, `behind_or_diverged`, `not_initialised`, `legacy_symlink`, `remote_unreachable`, `unknown`}. Output is structured JSON with `status`, `project_sha`, `remote_sha`, `message`.
+
+After invocation, report:
+- `status` and human-readable `message`.
+- If `behind_or_diverged`: surface "run /plan-foundry-sync".
+- If `not_initialised`: surface "run /init-plan-foundry first".
+- If `legacy_symlink`: surface "run /init-plan-foundry to migrate".
+- If `remote_unreachable`: report current pin and the network error.
