@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""
+uninstall.py - Implementation of plan-foundry-uninstall.
+
+Local-only. Removes the four bundle-managed dirs, the version pin,
+the bundle .gitignore entries, and the CLAUDE.md sentinel block.
+Leaves Workbench/, Retired/, monthly LOG, and project-local .claude/
+files untouched.
+
+Always exits 0; status is conveyed via JSON on stdout.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import pathlib
+import shutil
+import stat
+import sys
+
+BUNDLE_MANAGED_DIRS = ("skills", "agents", "commands", "hooks")
+GITIGNORE_BUNDLE_ENTRIES = (
+    "Retired/",
+    "Workbench/.heartbeat/",
+    ".plan-foundry-tmp/",
+    ".claude/skills/",
+    ".claude/agents/",
+    ".claude/commands/",
+    ".claude/hooks/",
+    ".claude/.plan-foundry-bundle-version",
+    ".claude/_foundry_log.jsonl",
+)
+SENTINEL_START = "<!-- plan-foundry:init-plan-foundry:start -->"
+SENTINEL_END = "<!-- plan-foundry:init-plan-foundry:end -->"
+
+
+def _force_rmtree(path: pathlib.Path) -> None:
+    def on_error(func, p, _exc):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+        except OSError:
+            return
+        try:
+            func(p)
+        except OSError:
+            return
+
+    shutil.rmtree(path, onerror=on_error)
+
+
+def _remove_bundle_dirs(target_claude: pathlib.Path) -> list[str]:
+    removed: list[str] = []
+    for sub in BUNDLE_MANAGED_DIRS:
+        path = target_claude / sub
+        if path.exists():
+            _force_rmtree(path)
+            removed.append(f".claude/{sub}/")
+    return removed
+
+
+def _remove_files(target_root: pathlib.Path) -> list[str]:
+    """Remove the version pin, telemetry log, and any leftover .plan-foundry-tmp/."""
+    removed: list[str] = []
+    target_claude = target_root / ".claude"
+    for relpath in (".plan-foundry-bundle-version", "_foundry_log.jsonl"):
+        p = target_claude / relpath
+        if p.exists():
+            p.unlink()
+            removed.append(f".claude/{relpath}")
+    tmp = target_root / ".plan-foundry-tmp"
+    if tmp.exists():
+        _force_rmtree(tmp)
+        removed.append(".plan-foundry-tmp/")
+    return removed
+
+
+def _reverse_gitignore(target_root: pathlib.Path) -> list[str]:
+    gi = target_root / ".gitignore"
+    if not gi.exists():
+        return []
+    lines = gi.read_text(encoding="utf-8").splitlines()
+    removed_entries: list[str] = []
+    kept: list[str] = []
+    bundle_set = set(GITIGNORE_BUNDLE_ENTRIES)
+    for line in lines:
+        if line.strip() in bundle_set:
+            removed_entries.append(line.strip())
+        else:
+            kept.append(line)
+    # Trim trailing blank lines if we removed content
+    while kept and kept[-1].strip() == "":
+        kept.pop()
+    if not kept:
+        gi.unlink()
+    else:
+        gi.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    return [f".gitignore: {e}" for e in removed_entries]
+
+
+def _remove_sentinel_block(target_root: pathlib.Path) -> list[str]:
+    claude_md = target_root / "CLAUDE.md"
+    if not claude_md.exists():
+        return []
+    text = claude_md.read_text(encoding="utf-8")
+    start_idx = text.find(SENTINEL_START)
+    end_idx = text.find(SENTINEL_END)
+    if start_idx == -1 or end_idx == -1 or end_idx < start_idx:
+        return []
+    # Extend end_idx to the end of the line containing SENTINEL_END
+    line_end = text.find("\n", end_idx)
+    if line_end == -1:
+        line_end = len(text)
+    else:
+        line_end += 1  # include the newline
+    # Extend start_idx backwards to the start of its line
+    line_start = text.rfind("\n", 0, start_idx)
+    if line_start == -1:
+        line_start = 0
+    else:
+        line_start += 1  # don't include the previous line's newline
+    # Trim one preceding blank line if present (cosmetic)
+    if line_start >= 2 and text[line_start - 2 : line_start] == "\n\n":
+        line_start -= 1
+    new_text = text[:line_start] + text[line_end:]
+    claude_md.write_text(new_text, encoding="utf-8")
+    return ["CLAUDE.md sentinel block"]
+
+
+def _list_kept(target_root: pathlib.Path) -> list[str]:
+    kept: list[str] = []
+    for d in ("Workbench", "Retired"):
+        if (target_root / d).exists():
+            kept.append(f"{d}/")
+    target_claude = target_root / ".claude"
+    if target_claude.exists():
+        for entry in sorted(target_claude.iterdir()):
+            # The bundle-managed dirs were just removed in Step 1.
+            # Anything left is operator data.
+            kept.append(f".claude/{entry.name}")
+    return kept
+
+
+def uninstall(target_root: pathlib.Path) -> dict:
+    target_root = pathlib.Path(target_root)
+    target_claude = target_root / ".claude"
+    removed: list[str] = []
+    skipped: list[str] = []
+
+    if not target_claude.exists():
+        skipped.append(".claude/ (already absent)")
+    else:
+        removed.extend(_remove_bundle_dirs(target_claude))
+        removed.extend(_remove_files(target_root))
+
+    removed.extend(_reverse_gitignore(target_root))
+    removed.extend(_remove_sentinel_block(target_root))
+
+    # If .claude/ is now empty, remove it.
+    if target_claude.exists() and not any(target_claude.iterdir()):
+        target_claude.rmdir()
+        removed.append(".claude/ (empty after cleanup)")
+
+    kept = _list_kept(target_root)
+    summary = (
+        f"uninstalled plan_foundry; removed {len(removed)} path(s); "
+        f"kept {len(kept)} operator-data path(s)"
+    )
+    return {
+        "outcome": "success",
+        "payload": {"removed": removed, "skipped": skipped, "kept": kept},
+        "summary": summary,
+    }
+
+
+def main(argv=None):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--target-root",
+        default=None,
+        help="Project root (default: current working directory).",
+    )
+    args = parser.parse_args(argv)
+    target_root = (
+        pathlib.Path(args.target_root).expanduser().resolve()
+        if args.target_root
+        else pathlib.Path.cwd().resolve()
+    )
+    result = uninstall(target_root)
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
