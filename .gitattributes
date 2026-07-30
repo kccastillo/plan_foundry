@@ -1,0 +1,36 @@
+# Line-ending policy.
+#
+# Git hooks and shell scripts MUST keep LF endings. Git executes hooks via
+# their shebang line, and a CRLF-terminated shebang fails with
+# "bad interpreter: /usr/bin/env sh^M". On Windows checkouts with
+# core.autocrlf=true this would ship a silently broken hook to every
+# consumer, so it is pinned here rather than left to local git config.
+#
+# Added 2026-07-27 alongside .claude/hooks/commit-msg (PLAN-AD2 W0.7).
+
+# Repo-wide LF, added 2026-07-27.
+#
+# The two pins below were correct but too narrow. Everything else was
+# "unspecified", so local core.autocrlf governed it: git stores LF and
+# rewrites the working tree to CRLF on checkout. That left a MIXED working
+# tree - files git checked out were CRLF, files the skills' Python helpers
+# wrote were LF - and every commit emitted "LF will be replaced by CRLF the
+# next time Git touches it" warnings for each one.
+#
+# Verified before pinning: zero tracked blobs contain CR in the index, so
+# this changes nothing that is stored. It only stops the working tree being
+# rewritten away from what every tool in this repo writes.
+#
+# This is a repo of shell hooks, Python helpers and Markdown that agents
+# read and rewrite in place. LF everywhere is the ending all of it assumes.
+
+* text=auto eol=lf
+
+# Kept explicit: these are executed rather than merely read, and a
+# CRLF-terminated shebang fails with "bad interpreter: /usr/bin/env sh^M".
+# Git executes hooks directly, so a broken ending here ships a silently
+# dead hook to every consumer. Redundant under the line above by design -
+# if that line is ever relaxed, these must not relax with it.
+
+*.sh            text eol=lf
+.claude/hooks/** text eol=lf
