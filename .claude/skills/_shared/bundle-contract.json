@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "deprecations": [
+    {
+      "path": ".claude/skills/_shared/bundle_copy.py::_is_under_known_subskill",
+      "since": "v1.13.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "bundle_copy.classify_stale (receipt-backed, PLAN-AH7)",
+      "note": "Heuristic fallback that treats a target-only path as a project addition when its top-level subdir is unknown to the bundle. It exists only to carry consumers who hold no install receipt yet (pre-AH7 installs, or a receipt lost off-disk); classify_stale supersedes it once every consumer has synced at least once under the receipt. kind: helper - this is a symbol inside bundle_copy.py, not a standalone file, so it has no file-path address: never shim-generated, never quarantine-matched.",
+      "kind": "helper"
+    }
+  ]
+}
