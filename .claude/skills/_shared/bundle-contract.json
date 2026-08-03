@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "deprecations": [
+    {
+      "path": ".claude/skills/_shared/bundle_copy.py::_is_under_known_subskill",
+      "since": "v1.13.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "bundle_copy.classify_stale (receipt-backed, PLAN-AH7)",
+      "note": "Heuristic fallback that treats a target-only path as a project addition when its top-level subdir is unknown to the bundle. It exists only to carry consumers who hold no install receipt yet (pre-AH7 installs, or a receipt lost off-disk); classify_stale supersedes it once every consumer has synced at least once under the receipt. kind: helper - this is a symbol inside bundle_copy.py, not a standalone file, so it has no file-path address: never shim-generated, never quarantine-matched.",
+      "kind": "helper"
+    },
+    {
+      "path": ".claude/skills/convert-pdf/SKILL.md",
+      "since": "v1.15.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "paper_trail bundle (separate product; not installed by plan_foundry)",
+      "note": "Orchestrates PDF/DOCX conversion to segmented, formatted Markdown. Moved out of plan_foundry on 2026-08-03 into the paper_trail bundle, a separate product for turning source documents into audited evidence cards. plan_foundry is planning scaffold and this skill was not that. There is no replacement inside this bundle: install paper_trail if you need it. Your copy is not deleted on sync - it is moved to .claude/.plan-foundry-quarantine/<timestamp>/ and is recoverable from there.",
+      "kind": "skill"
+    },
+    {
+      "path": ".claude/skills/doc-to-md/SKILL.md",
+      "since": "v1.15.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "paper_trail bundle (separate product; not installed by plan_foundry)",
+      "note": "Converts a source document to raw Markdown. Moved out of plan_foundry on 2026-08-03 into the paper_trail bundle, a separate product for turning source documents into audited evidence cards. plan_foundry is planning scaffold and this skill was not that. There is no replacement inside this bundle: install paper_trail if you need it. Your copy is not deleted on sync - it is moved to .claude/.plan-foundry-quarantine/<timestamp>/ and is recoverable from there.",
+      "kind": "skill"
+    },
+    {
+      "path": ".claude/skills/segment-doc/SKILL.md",
+      "since": "v1.15.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "paper_trail bundle (separate product; not installed by plan_foundry)",
+      "note": "Detects document boundaries and writes per-segment files. Moved out of plan_foundry on 2026-08-03 into the paper_trail bundle, a separate product for turning source documents into audited evidence cards. plan_foundry is planning scaffold and this skill was not that. There is no replacement inside this bundle: install paper_trail if you need it. Your copy is not deleted on sync - it is moved to .claude/.plan-foundry-quarantine/<timestamp>/ and is recoverable from there.",
+      "kind": "skill"
+    },
+    {
+      "path": ".claude/skills/reformat-md/SKILL.md",
+      "since": "v1.15.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "paper_trail bundle (separate product; not installed by plan_foundry)",
+      "note": "Normalises headings, strips artefacts and applies frontmatter. Moved out of plan_foundry on 2026-08-03 into the paper_trail bundle, a separate product for turning source documents into audited evidence cards. plan_foundry is planning scaffold and this skill was not that. There is no replacement inside this bundle: install paper_trail if you need it. Your copy is not deleted on sync - it is moved to .claude/.plan-foundry-quarantine/<timestamp>/ and is recoverable from there.",
+      "kind": "skill"
+    },
+    {
+      "path": ".claude/skills/foundry-research/SKILL.md",
+      "since": "v1.15.0",
+      "removed_in": "v2.0.0",
+      "replaced_by": "paper_trail bundle (separate product; not installed by plan_foundry)",
+      "note": "Model-tiered, budget-sized deep-research fan-out. Moved out of plan_foundry on 2026-08-03 into the paper_trail bundle, a separate product for turning source documents into audited evidence cards. plan_foundry is planning scaffold and this skill was not that. There is no replacement inside this bundle: install paper_trail if you need it. Your copy is not deleted on sync - it is moved to .claude/.plan-foundry-quarantine/<timestamp>/ and is recoverable from there.",
+      "kind": "skill"
+    }
+  ]
+}
