@@ -1,0 +1,25 @@
+{
+  "skill": "<lowercase-hyphenated-name>",
+  "runs_per_query": 3,
+  "should_trigger": [
+    "<a prompt a user would actually type, in their words rather than yours>",
+    "<a second, phrased differently enough to test the description rather than one phrase>",
+    "<a request that describes the problem without naming the skill or its jargon>"
+  ],
+  "should_not_trigger": [
+    "<a near miss that belongs to the neighbouring skill this one is most confusable with>",
+    "<a prompt sharing this skill's keywords but not its intent>",
+    "<ordinary work in this repo that should reach no skill at all>"
+  ],
+  "thresholds": {
+    "min_trigger_rate": 1.0,
+    "max_false_trigger_rate": 0.0
+  },
+  "measured": {
+    "run_date": "<YYYY-MM-DD the runs were dispatched>",
+    "runs_per_query": 3,
+    "trigger_rate": 0.0,
+    "false_trigger_rate": 0.0,
+    "substitutes": ["<skill that fired instead, or omit the list when none did>"]
+  }
+}
