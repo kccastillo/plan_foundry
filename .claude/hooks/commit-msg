@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+# commit-msg -- ASCII guard at the git boundary (PLAN-AD2 D9 / W0.7).
+#
+# Rewrites the commit message file ($1) to pure ASCII using
+# .claude/skills/_shared/ascii_git.py, so non-ASCII punctuation (em-dashes,
+# arrows, curly quotes, etc.) never reaches a commit subject/body.
+#
+# SCOPE: commit messages and tag annotations ONLY. This hook never touches
+# tracked file contents -- the repo's own documentation deliberately keeps
+# non-ASCII prose (W0.1), and nothing here should undo that.
+#
+# CRITICAL: rewrite silently, NEVER reject. A rejected commit mid-pipeline
+# reads as a stalled run rather than a lint failure. This hook always
+# exits 0, even if Python is missing or the sanitiser errors -- in every
+# failure case the message file is simply left untouched.
+#
+# Comment lines (lines starting with "#") that git appends to the message
+# file (e.g. "# Please enter the commit message...") are left structurally
+# intact by ascii_git.py -- it only substitutes characters within lines,
+# never deletes lines, so git's own comment-stripping behaviour on commit
+# is unaffected.
+
+msg_file="$1"
+
+# No message file given -- nothing to do, never block.
+if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
+    exit 0
+fi
+
+# Locate the sanitiser relative to this hook's own location, so it works
+# regardless of the caller's working directory.
+hook_dir=$(dirname "$0")
+sanitiser="$hook_dir/../skills/_shared/ascii_git.py"
+
+if [ ! -f "$sanitiser" ]; then
+    # Sanitiser not present in this checkout -- leave the message untouched.
+    exit 0
+fi
+
+# Find a usable Python interpreter. Try python3 first, then python.
+python_bin=""
+if command -v python3 >/dev/null 2>&1; then
+    python_bin="python3"
+elif command -v python >/dev/null 2>&1; then
+    python_bin="python"
+fi
+
+if [ -z "$python_bin" ]; then
+    # No Python available -- leave the message untouched.
+    exit 0
+fi
+
+# Best-effort rewrite. Any failure here is swallowed: the message file is
+# left exactly as git wrote it, and the hook still exits 0.
+"$python_bin" "$sanitiser" "$msg_file" >/dev/null 2>&1 || true
+
+exit 0
