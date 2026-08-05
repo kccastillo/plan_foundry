@@ -1,0 +1,32 @@
+---
+name: <lowercase-hyphenated-name>
+description: <What it does. When to use it. What it produces. Then the phrases a user would actually type. Write this last, after the body exists.>
+---
+
+# <name>
+
+## Objective
+
+<What this skill is for, in the terms of the person invoking it. Not the mechanism.
+A reader who knows only this must be able to tell whether it is the skill they want.>
+
+## Constraints
+
+<What the skill must not do, and what it routes elsewhere.
+
+Each constraint here should survive the compensating-versus-descriptive test in the
+standard. If a competent model would do it unprompted, delete the line.
+
+Delete this section only if the skill genuinely has no constraints, which is rare
+enough to be worth a second look.>
+
+## <The work>
+
+<The procedure, or a link to it. Push detail into a workflow or reference file rather
+than out of the skill. Keep reference links one level deep.>
+
+## What done looks like
+
+<The condition under which the work is finished, stated so a reader can check it
+rather than judge it. "The file exists and its frontmatter parses" is checkable.
+"The output is high quality" is not, and an uncheckable condition always passes.>
