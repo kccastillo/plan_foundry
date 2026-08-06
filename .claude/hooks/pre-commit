@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+#
+# plan_foundry pre-commit hook.
+#
+# Installed automatically by init-plan-foundry and plan-foundry-sync, which
+# set core.hooksPath to .claude/hooks (PLAN-AD2 D10). Git does not auto-install
+# hooks from tracked files, so a fresh clone that has run neither needs:
+#   git config core.hooksPath .claude/hooks
+#
+# What it does:
+#   1. CLAUDE.md hard line-cap (T04). Aborts if CLAUDE.md exceeds 175 lines.
+#      CLAUDE.md is always-loaded; every line costs tokens on every interaction.
+#      The cap exists to prevent gradual context-rot drift. Runs ONLY in the
+#      plan_foundry source repo itself (is_foundry_source below) - no consumer
+#      opted into this repo-local gate.
+#   2. FOUNDRYREQ/PTREQ deletion guard (PLAN-AK7 D1/D2). Blocks a commit that
+#      plainly deletes (not renames) an unintegrated Workbench/FOUNDRYREQ-*.md
+#      or Workbench/PTREQ-*.md file. Ships to every consumer - unconditional.
+#
+# Post-PLAN-AC3 (plugin marketplace abandoned): the dogfood-mirror drift
+# check is gone - there is no plugin tree to drift from. Skills, agents,
+# commands now live at canonical .claude/<kind>/<name> as real dirs.
+#
+# Bypass, either check (rare, e.g. WIP commit): `git commit --no-verify`.
+# Bypass, deletion guard only: set `integration_status: integrated` on the
+# request file before deleting it, or stage its destination in the same
+# commit (the normal `retire` shape - git reports this as a rename, never a
+# plain delete, so the guard never inspects it).
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Is this the plan_foundry source repo, or a consumer install? Same test
+# scripts/ci/run-all.sh already uses for the same distinction.
+is_foundry_source=0
+if [ -f scripts/promote.sh ] && [ -f scripts/prod-repo.txt ]; then
+    is_foundry_source=1
+fi
+
+# 1. CLAUDE.md hard line-cap (T04). 175 lines. Dev-repo-only (see above).
+if [ "$is_foundry_source" = "1" ]; then
+    CLAUDE_MD_CAP=175
+    if [ -f CLAUDE.md ]; then
+        lines=$(wc -l < CLAUDE.md)
+        if [ "$lines" -gt "$CLAUDE_MD_CAP" ]; then
+            echo "drift-check: CLAUDE.md is $lines lines - exceeds hard cap of $CLAUDE_MD_CAP." >&2
+            echo "" >&2
+            echo "CLAUDE.md is always-loaded; every line costs tokens on every interaction." >&2
+            echo "Trim before committing, or move content into a referenced doc." >&2
+            echo "See maintain-project-docs skill for prune guidance." >&2
+            exit 1
+        fi
+    fi
+fi
+
+# 2. FOUNDRYREQ/PTREQ deletion guard (PLAN-AK7). Unconditional - ships to
+# every consumer. Resolved hook-relative, the same way commit-msg resolves
+# ascii_git.py, since this hook's own directory is not necessarily this
+# repo's .claude/hooks (a fixture repo can point core.hooksPath elsewhere).
+hook_dir=$(dirname "$0")
+guard_module="$hook_dir/../skills/_shared/foundryreq_deletion_guard.py"
+
+if [ -f "$guard_module" ]; then
+    python_bin=""
+    if command -v python3 >/dev/null 2>&1; then
+        python_bin="python3"
+    elif command -v python >/dev/null 2>&1; then
+        python_bin="python"
+    fi
+
+    if [ -n "$python_bin" ]; then
+        if ! "$python_bin" "$guard_module" "$REPO_ROOT"; then
+            echo "" >&2
+            echo "pre-commit: blocked - an unintegrated FOUNDRYREQ/PTREQ request file" >&2
+            echo "above is staged for deletion (integration_status is not 'integrated')." >&2
+            echo "" >&2
+            echo "To proceed, either:" >&2
+            echo "  - set integration_status: integrated on the file before deleting it; or" >&2
+            echo "  - stage its destination in the same commit (the normal retire move," >&2
+            echo "    which git reports as a rename, not a deletion); or" >&2
+            echo "  - bypass this check entirely: git commit --no-verify" >&2
+            exit 1
+        fi
+    fi
+    # No interpreter found: degrade to inactive rather than block every commit.
+fi
+# No guard module present (e.g. hooks dir isolated from .claude/skills/):
+# degrade to inactive rather than block every commit.
+
+exit 0
