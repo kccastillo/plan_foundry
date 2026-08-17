@@ -1,0 +1,1152 @@
+# corpus-ownership.toml - single source of truth for the corpus ownership
+# index (PLAN-AM8). Generated view: .claude/skills/_shared/corpus-ownership.md
+# Regenerate the view with: python3 scripts/ci/sync-corpus-ownership.py
+#
+# Realises the Single Canonical Home invariant (ARCHITECTURE.md). Seeded at
+# PLAN-AM8 Step 2 from the helper-corpus restructure's per-concept ownership
+# map and occurrence census (one-time read, now retired). This data source is
+# the durable record; it anchors to no ephemeral working file.
+#
+# owns_provenance: "seeded" = concern taken from the restructure's ownership
+# map or census. "provisional" = executor-authored one-line paraphrase for a
+# file the census does not classify. provisional owns lines carry no
+# acceptance check - the drift-check verifies structure only. Semantic
+# validation of provisional rows is a maintain-project-docs follow-on.
+#
+# class: home-pointer-eligible | pointer | dispatch-inline |
+# consumer-standalone | human-edit-only - assigned by the deterministic
+# five-branch classification rule in PLAN-AM8 Step 2, never by judgement.
+
+[scope]
+# Corpus definition for the bijection check (sub-check i). Every file
+# matched by include_globs or listed in include_paths, minus exclude, must
+# have exactly one row below.
+include_globs = [
+    ".claude/skills/_shared/*.md",
+    ".claude/skills/*/SKILL.md",
+    ".claude/skills/*/references/*.md",
+    ".claude/skills/*/workflows/*.md",
+    ".claude/skills/*/templates/*.md",
+    ".claude/agents/*.md",
+]
+include_paths = [
+    ".claude/skills/init-plan-foundry/operating-rules.md",
+]
+exclude = [
+    ".claude/skills/_shared/corpus-ownership.md",
+    ".claude/skills/_shared/corpus-ownership.toml",
+]
+
+# ---------------------------------------------------------------------------
+# .claude/skills/_shared/*.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/_shared/artefact-register-agent-block.md"
+owns = "(source) artefact writing rules condensed from writing-style.md, spliced into seven agent bodies"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = [
+    ".claude/agents/audit-ceiling-diagnostician.md",
+    ".claude/agents/plan-executor.md",
+    ".claude/agents/plan-executor-opus.md",
+    ".claude/agents/plan-executor-sonnet.md",
+    ".claude/agents/plan-safety-auditor.md",
+    ".claude/agents/plan-writer.md",
+    ".claude/agents/sufficiency-auditor.md",
+]
+synced_from = ""
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/skills/_shared/audit-stages.md"
+owns = "the three-stage audit distinction: sufficiency, haiku-safe (plan-safe criteria), and plan-safety"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/plan-safe.md"]
+points_at_note = { ".claude/skills/_shared/plan-safe.md" = "five mechanical criteria" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/auditor-schema-v3.md"
+owns = "v3 audit payload JSON schema: level enum, patch/occurrence types, mechanically_forced/real_judgement_call finding disposition"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/capacity-thresholds.md"
+owns = "0.8x capacity-ceiling trigger mechanism referenced by Spec-Draft rigour heuristics"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/_shared/spec-rigour-heuristics.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/config-loader.md"
+owns = "the plan-foundry.config file contract and how a skill reads it"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/deprecation-policy.md"
+owns = "deprecation ledger/shim/quarantine mechanism"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/dispatch-authorisation.md"
+owns = "dispatch economy: cheapest-capable tier ladder, grant grammar (send it 1-4), carve-outs"
+owns_provenance = "seeded"
+class = "human-edit-only"
+points_at = []
+points_at_note = {}
+pointed_at_by = [
+    ".claude/skills/_shared/executor-capability-boundary.md",
+    ".claude/skills/_shared/fable-escalation-policy.md",
+    ".claude/skills/_shared/thin-orchestration.md",
+]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/executor-capability-boundary.md"
+owns = "what a dispatched executor may touch, derived from the agent file's own skills:/disallowedTools: declarations"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/dispatch-authorisation.md"]
+points_at_note = { ".claude/skills/_shared/dispatch-authorisation.md" = "scope" }
+pointed_at_by = [
+    ".claude/agents/plan-executor.md",
+    ".claude/agents/plan-executor-sonnet.md",
+    ".claude/agents/plan-executor-opus.md",
+    ".claude/skills/write-plan/references/assigned_to-field.md",
+]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/fable-escalation-policy.md"
+owns = "Fable escalation routing rules, applying the difficulty-not-importance trigger"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/dispatch-authorisation.md"]
+points_at_note = { ".claude/skills/_shared/dispatch-authorisation.md" = "difficulty-not-importance trigger" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/harness-contract.md"
+owns = "Claude Code harness surfaces, assumptions and workarounds"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [
+    ".claude/skills/_shared/questioning-contract.md",
+    ".claude/skills/_shared/skill-standard.md",
+]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/plan-safe.md"
+owns = "the plan-safe standard: five criteria a PLAN Step must meet, executor t-shirt sizing, PSZ001"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [
+    ".claude/skills/_shared/audit-stages.md",
+    ".claude/skills/write-plan/references/plan-conventions.md",
+]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/platform-portability.md"
+owns = "CI-baseline portability rule for verify:/acceptance: commands: forbidden shell patterns, # platform: opt-out"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/write-plan/references/plan-conventions.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/proportionality-gate.md"
+owns = "ideate's four-rung proportionality gate: just-do-it / plan-it / audit-it / full-arc"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/questioning-contract.md"
+owns = "AskUserQuestion usage rules and the decision-briefing format"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/harness-contract.md"]
+points_at_note = { ".claude/skills/_shared/harness-contract.md" = "AskUserQuestion mobile-rendering bug" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/research-prompt-template.md"
+owns = "mandatory research sub-questions and the survey-researcher dispatch template"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/skill-standard.md"
+owns = "the skill standard: required SKILL.md contents, description-health test, retirement-evidence-is-external rule"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/harness-contract.md"]
+points_at_note = { ".claude/skills/_shared/harness-contract.md" = "frontmatter recognised-field set" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/spec-rigour-heuristics.md"
+owns = "Spec-Draft rigour heuristics H2/H4/H8: 0.8x threshold, calling-convention checklist, literal-heading rule"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/capacity-thresholds.md"]
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/thin-orchestration.md"
+owns = "thin-orchestration discipline for fan-out dispatch: orchestrator-owns-git, writable-set, commit-at-milestones"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/dispatch-authorisation.md"]
+points_at_note = { ".claude/skills/_shared/dispatch-authorisation.md" = "cheapest-capable tier ladder" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/_shared/writing-style.md"
+owns = "artefact writing rules: word/verb/sentence/structure discipline for anything written to a file"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# .claude/skills/*/SKILL.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/audit-haiku-safe/SKILL.md"
+owns = "audit-haiku-safe skill entry point: mechanical plan-safety checks, capability-boundary sub-clause citations"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-skills/SKILL.md"
+owns = "audit-skills skill entry point: skill-corpus audit triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-sufficiency/SKILL.md"
+owns = "audit-sufficiency skill entry point; declares the decision-tier triage vocabulary (already_locked/mechanically_forced/real_judgement_call)"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/autonomous-loop/SKILL.md"
+owns = "autonomous-loop skill entry point: unattended drafted-to-complete drive triggers and run-loop workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/execute-plan/SKILL.md"
+owns = "execute-plan skill entry point: execution workflow trigger, orchestrator-owned frontmatter field list"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/handoff-next-session/SKILL.md"
+owns = "handoff-next-session skill entry point: session-handoff triggers and write-handoff workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/SKILL.md"
+owns = "ideate skill entry point: eight-phase cadence triggers, decision-tier taxonomy restatement"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/init-plan-foundry/SKILL.md"
+owns = "init-plan-foundry skill entry point: bootstrap-install triggers and init-steps workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/SKILL.md"
+owns = "maintain-project-docs skill entry point: durable-doc audit/add/prune triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-check-current/SKILL.md"
+owns = "plan-foundry-check-current skill entry point: currency-check triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-sync/SKILL.md"
+owns = "plan-foundry-sync skill entry point: bundle-sync triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-uninstall/SKILL.md"
+owns = "plan-foundry-uninstall skill entry point: bundle-removal triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-pipeline/SKILL.md"
+owns = "plan-pipeline skill entry point: phase orchestration triggers, orchestrator-owned field names, capability-boundary citation"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/raise-foundry-request/SKILL.md"
+owns = "raise-foundry-request skill entry point: FOUNDRYREQ filing triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/rehydrate-handoff/SKILL.md"
+owns = "rehydrate-handoff skill entry point: session-start handoff-discovery triggers and read-handoff workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/retire/SKILL.md"
+owns = "retire skill entry point: artefact-retirement triggers and retire-file workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/test-foundry/SKILL.md"
+owns = "test-foundry skill entry point: test-harness triggers and run-tests workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-input/SKILL.md"
+owns = "write-input skill entry point: INPUT file transcription triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/SKILL.md"
+owns = "write-plan skill entry point: PLAN transcription triggers and workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-skill/SKILL.md"
+owns = "write-skill skill entry point: skill scaffolding triggers and trigger-proving workflow pointer"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# .claude/skills/*/references/*.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/audit-haiku-safe/references/auditor-codes.md"
+owns = "audit-haiku-safe finding-code registry: EBV/PPV/SFV codes, D8 capability-boundary derivation rule, forbidden-pattern table"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/audit-sufficiency/references/auditor-codes.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-skills/references/ownership.md"
+owns = "bundle-managed versus consumer-owned skill ownership determination for audit-skills"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-sufficiency/references/auditor-codes.md"
+owns = "audit-sufficiency finding-code registry, pointing to audit-haiku-safe's registry for PPV codes"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/audit-haiku-safe/references/auditor-codes.md"]
+points_at_note = { ".claude/skills/audit-haiku-safe/references/auditor-codes.md" = "PPV (platform-portability) codes" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-sufficiency/references/sufficiency-audit-exemplar.md"
+owns = "worked example of a sufficiency-audit pass"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/execute-plan/references/heartbeat-spec.md"
+owns = "heartbeat file schema, tick cadence and lifecycle for executor progress signalling"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/handoff-next-session/references/claim-carry-gate.md"
+owns = "which claims a handoff may carry forward versus must re-derive"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/handoff-next-session/references/handoff-naming.md"
+owns = "handoff filename grammar and scoping rules"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/handoff-next-session/references/readiness-gate.md"
+owns = "handoff readiness check: reads pipeline_phase, audit_state and status before offering a handoff"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/references/critique-codes.md"
+owns = "self-critique finding-code registry for the ideate cadence"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/references/critique-schema.md"
+owns = "structured schema for ideate self-critique findings"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/references/phase-transitions.md"
+owns = "ideate cadence phase-transition rules"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/references/anti-patterns.md"
+owns = "documentation anti-patterns maintain-project-docs checks for"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/references/audit-checklist.md"
+owns = "checklist maintain-project-docs runs against the durable-doc set"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-pipeline/references/phase-state-machine.md"
+owns = "pipeline_phase enum, orchestrator frontmatter mutation cheat sheet, Decision-15 output-format template"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/audit-sufficiency/workflows/audit-sufficiency-steps.md"]
+points_at_note = { ".claude/skills/audit-sufficiency/workflows/audit-sufficiency-steps.md" = "taxonomy" }
+pointed_at_by = [".claude/skills/write-plan/references/plan-conventions.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/references/assigned_to-field.md"
+owns = "the assigned_to frontmatter field: valid executor values and capability-boundary pointer"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [".claude/skills/_shared/executor-capability-boundary.md"]
+points_at_note = { ".claude/skills/_shared/executor-capability-boundary.md" = "outside the executor capability boundary" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/references/naming-convention.md"
+owns = "PLAN and INPUT filename convention detail"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/references/plan-conventions.md"
+owns = "PLAN/INPUT file conventions: naming, identity, status enum, frontmatter schema, holding-PLAN pattern"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = [
+    ".claude/skills/plan-pipeline/references/phase-state-machine.md",
+    ".claude/skills/_shared/platform-portability.md",
+    ".claude/skills/_shared/plan-safe.md",
+    ".claude/skills/ideate/workflows/cadence-phases.md",
+    ".claude/skills/write-plan/references/plan-of-plans-authoring.md",
+]
+points_at_note = { ".claude/skills/plan-pipeline/references/phase-state-machine.md" = "pipeline_phase enum + orchestrator-managed fields", ".claude/skills/_shared/platform-portability.md" = "forbidden-pattern list", ".claude/skills/_shared/plan-safe.md" = "PSZ001/sizing", ".claude/skills/ideate/workflows/cadence-phases.md" = "Ideate Cadence Requirements", ".claude/skills/write-plan/references/plan-of-plans-authoring.md" = "plan-of-plans sketch-first convention" }
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/references/plan-of-plans-authoring.md"
+owns = "authoring discipline for a plan-of-plans: sketch-first placeholder convention, parent-update rules"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/write-plan/references/plan-conventions.md"]
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# .claude/skills/*/workflows/*.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/audit-haiku-safe/workflows/audit-haiku-safe-steps.md"
+owns = "audit-haiku-safe step-by-step procedure: capability-boundary checks, Step 4b platform-portability pattern table"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/audit-sufficiency/workflows/audit-sufficiency-steps.md"
+owns = "audit-sufficiency step-by-step procedure; Step 4 owns the decision-tier triage taxonomy definitions"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/plan-pipeline/references/phase-state-machine.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/autonomous-loop/workflows/run-loop.md"
+owns = "autonomous-loop drive procedure from drafted to complete"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/execute-plan/workflows/execute-steps.md"
+owns = "PLAN execution step-by-step procedure, including the plan-of-plans sync"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/handoff-next-session/workflows/write-handoff.md"
+owns = "session-handoff authoring procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/workflows/cadence-phases.md"
+owns = "ideate cadence phase detail, including the F7 decision-tier triage column and research-sub-question dispatch"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = [".claude/skills/write-plan/references/plan-conventions.md"]
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/workflows/ideate-arc.md"
+owns = "ideate's eight-phase cadence procedure"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/workflows/risk-assess-idea.md"
+owns = "ideate's idea-stage risk-assessment gate procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/ideate/workflows/risk-assess-spec.md"
+owns = "ideate's spec-stage risk-assessment gate procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/init-plan-foundry/workflows/init-steps.md"
+owns = "bundle bootstrap-install procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/workflows/produce-plan.md"
+owns = "maintain-project-docs PLAN/findings-file production procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-check-current/workflows/check.md"
+owns = "bundle currency-check procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-sync/workflows/sync.md"
+owns = "bundle-sync procedure: copy bundle-managed content, refresh version pin"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-foundry-uninstall/workflows/uninstall.md"
+owns = "bundle-removal procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/plan-pipeline/workflows/dispatch.md"
+owns = "plan-pipeline dispatch procedure: orchestrator-owned field mutation, capability-boundary application sites"
+owns_provenance = "seeded"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/raise-foundry-request/workflows/write-foundry-request.md"
+owns = "FOUNDRYREQ filing procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/rehydrate-handoff/workflows/read-handoff.md"
+owns = "session-start handoff discovery and presentation procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/retire/workflows/retire-file.md"
+owns = "artefact-retirement move-and-verify procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/test-foundry/workflows/run-tests.md"
+owns = "test-foundry harness run procedure: Python tier plus LLM scenarios"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-input/workflows/write-input.md"
+owns = "INPUT file transcription procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/workflows/write-plan.md"
+owns = "PLAN file transcription procedure"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-skill/workflows/prove-triggering.md"
+owns = "skill trigger-proving procedure against must-fire/must-not-fire prompts"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# .claude/skills/*/templates/*.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/handoff-next-session/templates/handoff-template.md"
+owns = "the HANDOFF file content contract template"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/init-plan-foundry/templates/claude-md-stub.md"
+owns = "CLAUDE.md stub content for a freshly-bootstrapped consumer project"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/templates/add-plan-template.md"
+owns = "PLAN template for a documentation-addition task"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/templates/audit-plan-template.md"
+owns = "PLAN template for a documentation-audit task"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/maintain-project-docs/templates/prune-plan-template.md"
+owns = "PLAN template for a documentation-pruning task"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-input/templates/input-template.md"
+owns = "the INPUT file template"
+owns_provenance = "provisional"
+class = "home-pointer-eligible"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/skills/write-plan/templates/plan-template.md"
+owns = "the PLAN file template copied verbatim into every new PLAN, including decision-tier taxonomy boilerplate"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# .claude/agents/*.md
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/agents/audit-ceiling-diagnostician.md"
+owns = "(consumer) audit-ceiling diagnosis system prompt"
+owns_provenance = "provisional"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/plan-executor-opus.md"
+owns = "(consumer) executor capability boundary exception prose"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = [".claude/skills/_shared/executor-capability-boundary.md"]
+points_at_note = { ".claude/skills/_shared/executor-capability-boundary.md" = "path only" }
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/plan-executor-sonnet.md"
+owns = "(consumer) executor capability boundary exception prose"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = [".claude/skills/_shared/executor-capability-boundary.md"]
+points_at_note = { ".claude/skills/_shared/executor-capability-boundary.md" = "path only" }
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/plan-executor.md"
+owns = "(consumer) executor capability boundary exception prose"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = [".claude/skills/_shared/executor-capability-boundary.md"]
+points_at_note = { ".claude/skills/_shared/executor-capability-boundary.md" = "path only" }
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/plan-retirer.md"
+owns = "(consumer) retire skill system prompt for the plan-retirer background agent"
+owns_provenance = "provisional"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+[[row]]
+path = ".claude/agents/plan-safety-auditor.md"
+owns = "(consumer) audit-haiku-safe system prompt for the plan-safety-auditor subagent"
+owns_provenance = "provisional"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/plan-writer.md"
+owns = "(consumer) Spec-Draft rigour heuristics H2/H4/H8, injected as system prompt"
+owns_provenance = "seeded"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/sufficiency-auditor.md"
+owns = "(consumer) audit-sufficiency system prompt for the sufficiency-auditor subagent"
+owns_provenance = "provisional"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ".claude/skills/_shared/artefact-register-agent-block.md"
+sync_by = "scripts/ci/sync-artefact-register.py"
+
+[[row]]
+path = ".claude/agents/survey-researcher.md"
+owns = "(consumer) research sub-question system prompt for the survey-researcher subagent"
+owns_provenance = "provisional"
+class = "dispatch-inline"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""
+
+# ---------------------------------------------------------------------------
+# Explicit managed-duplication fragment outside the reference/workflow/
+# template globs
+# ---------------------------------------------------------------------------
+
+[[row]]
+path = ".claude/skills/init-plan-foundry/operating-rules.md"
+owns = "(consumer) canonical operating-rules text spliced into a consumer's CLAUDE.md: install procedure, pipeline_phase enum, verify-premise, send it grammar"
+owns_provenance = "seeded"
+class = "consumer-standalone"
+points_at = []
+points_at_note = {}
+pointed_at_by = []
+synced_from = ""
+sync_by = ""

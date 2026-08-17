@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+#
+# plan_foundry pre-push hook.
+#
+# Installed automatically by init-plan-foundry and plan-foundry-sync, which
+# set core.hooksPath to .claude/hooks (PLAN-AD2 D10). Git does not auto-install
+# hooks from tracked files, so a fresh clone that has run neither needs:
+#   git config core.hooksPath .claude/hooks
+#
+# What it does (PLAN-AM0, 2026-08-16):
+#   Runs check_push_safe() from .claude/skills/_shared/push_guard.py against
+#   every `git push`, whatever session or tool issues it - closing the gap
+#   left by the prior binding, which ran check_push_safe() only inside
+#   dispatch.md's Step 7a and so never saw a push from any other session,
+#   tool, or human terminal. If the branch is behind its remote tracking
+#   ref, the push is refused before it reaches the network.
+#
+# Four named limits, not defects:
+#   - `git push --no-verify` bypasses this hook entirely, matching
+#     pre-commit's own documented escape hatch.
+#   - It judges the branch at HEAD, whatever refs are actually being pushed -
+#     so a tag push (e.g. scripts/promote.sh's release-tag push) is judged
+#     on HEAD's branch state, not the tag's own history.
+#   - It adds a `git fetch` with a 30-second timeout to every push in every
+#     repository that has this hook wired, where previously only
+#     orchestrator auto-pushes paid that cost.
+#   - Pushing to a URL rather than a named remote (`git push https://... main`)
+#     makes check_push_safe() compute against a remote name that does not
+#     resolve, so the check skips and the push proceeds - fail-open working
+#     as designed, not a defect.
+#
+# A repository that has never run init-plan-foundry or plan-foundry-sync, or
+# that already had a conflicting core.hooksPath set before either ran, stays
+# unwired - this hook never installs itself.
+#
+# Bypass: `git push --no-verify`.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Resolved hook-relative, the same way pre-commit resolves its own guard
+# module - this hook's own directory is not necessarily this repo's
+# .claude/hooks (a fixture repo can point core.hooksPath elsewhere).
+hook_dir=$(dirname "$0")
+guard_module="$hook_dir/../skills/_shared/push_guard.py"
+
+if [ ! -f "$guard_module" ]; then
+    # No guard module reachable (e.g. hooks dir isolated from .claude/skills/):
+    # degrade to inactive rather than block every push.
+    exit 0
+fi
+
+python_bin=""
+if command -v python3 >/dev/null 2>&1; then
+    python_bin="python3"
+elif command -v python >/dev/null 2>&1; then
+    python_bin="python"
+fi
+
+if [ -z "$python_bin" ]; then
+    # No interpreter found: degrade to inactive rather than block every push.
+    exit 0
+fi
+
+# Git invokes a pre-push hook as `pre-push <remote-name> <remote-url>` and
+# writes ref lines to stdin. This hook does not parse either: $1 is passed
+# straight through as the CLI's remote argument, check_push_safe() recomputes
+# ahead/behind itself via its own `git rev-list` call, and stdin is left to
+# drain naturally as the hook exits. The entrypoint's own print() reaches the
+# terminal directly (uncaptured), and this hook echoes its own refusal line
+# to stderr afterwards rather than trying to capture and re-emit it.
+if ! "$python_bin" "$guard_module" "$REPO_ROOT" "$1"; then
+    echo "" >&2
+    echo "pre-push: blocked - the guard above reports the local branch is behind" >&2
+    echo "its remote. Reconcile before pushing (fetch, then rebase or merge), or" >&2
+    echo "bypass this check entirely: git push --no-verify" >&2
+    exit 1
+fi
+
+exit 0
